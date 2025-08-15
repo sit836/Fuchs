@@ -30,15 +30,9 @@ def read_process_table4(prod_info_dict):
         for recipe_ver in recipe_vers:
             batch_ids = prod_info_dict[product][recipe_ver]
 
-            grouped = (
-                df_4[df_4['原料/产品 批次'].isin(batch_ids)]
-                .groupby('检测项目名称')['检测结果']
-                .mean()
-                .reset_index()
-            )
-            is_selected = grouped['检测项目名称'].isin(common_test_items)
-            grouped = grouped[is_selected]
-
+            grouped = df_4.loc[
+                df_4['原料/产品 批次'].isin(batch_ids) & df_4['检测项目名称'].isin(common_test_items), ['检测项目名称',
+                                                                                                        '检测结果']]
             grouped['产品'] = product
             grouped['配方版本'] = recipe_ver
 
