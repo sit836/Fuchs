@@ -29,14 +29,13 @@ def read_process_table4(prod_info_dict):
         recipe_vers = PROD_RECIPE_VER_MAP[product]
         for recipe_ver in recipe_vers:
             batch_ids = prod_info_dict[product][recipe_ver]
-
-            grouped = df_4.loc[
+            df_i = df_4.loc[
                 df_4['原料/产品 批次'].isin(batch_ids) & df_4['检测项目名称'].isin(common_test_items), ['检测项目名称',
                                                                                                         '检测结果']]
-            grouped['产品'] = product
-            grouped['配方版本'] = recipe_ver
+            df_i['产品'] = product
+            df_i['配方版本'] = recipe_ver
 
-            records.append(grouped)
+            records.append(df_i)
 
     result_df = pd.concat(records)
 
