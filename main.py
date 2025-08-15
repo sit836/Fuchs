@@ -50,7 +50,8 @@ def read_process_table4(prod_info_dict):
 
 def read_process_table2():
     df_raw = pd.read_excel('./data/表2 配方信息.xlsx', header=None)
-    df_raw = df_raw.T.fillna(0)
+    df_raw = df_raw.T
+    df_raw.iloc[1:] = df_raw.iloc[1:].fillna(0)
     df_raw.columns = df_raw.iloc[0]
     return df_raw.drop(0).reset_index(drop=True).astype({'产品': int, '配方版本': int}).astype({'产品': str})
 
