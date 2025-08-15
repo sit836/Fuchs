@@ -29,13 +29,20 @@ def read_process_table4(prod_info_dict):
         recipe_vers = PROD_RECIPE_VER_MAP[product]
         for recipe_ver in recipe_vers:
             batch_ids = prod_info_dict[product][recipe_ver]
-            df_i = df_4.loc[
-                df_4['原料/产品 批次'].isin(batch_ids) & df_4['检测项目名称'].isin(common_test_items), ['检测项目名称',
-                                                                                                        '检测结果']]
-            df_i['产品'] = product
-            df_i['配方版本'] = recipe_ver
 
-            records.append(df_i)
+            grouped = (
+                df_4[df_4['原料/产品 批次'].isin(batch_ids)]
+                .groupby('检测项目名称')['检测结果']
+                .mean()
+                .reset_index()
+            )
+            is_selected = grouped['检测项目名称'].isin(common_test_items)
+            grouped = grouped[is_selected]
+
+            grouped['产品'] = product
+            grouped['配方版本'] = recipe_ver
+
+            records.append(grouped)
 
     result_df = pd.concat(records)
 
@@ -49,8 +56,7 @@ def read_process_table4(prod_info_dict):
 
 def read_process_table2():
     df_raw = pd.read_excel('./data/表2 配方信息.xlsx', header=None)
-    df_raw = df_raw.T
-    df_raw.iloc[1:] = df_raw.iloc[1:].fillna(0)
+    df_raw = df_raw.T.fillna(0)
     df_raw.columns = df_raw.iloc[0]
     return df_raw.drop(0).reset_index(drop=True).astype({'产品': int, '配方版本': int}).astype({'产品': str})
 
