@@ -19,13 +19,13 @@ def create_prod_info_dict():
         result.append(df_1)
         prod_info_dict[product] = df_1.groupby('配方版本号')['产品批次号'].unique().to_dict()
     result_df = pd.concat(result).rename(columns={'产品名称': '产品', '配方版本号': '配方版本', '产品批次号': '产品批次', '原料批次号': '原料批次'})
-    result_df = result_df[['产品', '配方版本', '产品批次', '原料批次', '原料名称']]
+    result_df = result_df[['产品', '配方版本', '产品批次', '原料批次', '原料名称', '原料权重']]
     return prod_info_dict, result_df
 
 
 def read_process_table3():
     df_3 = pd.read_excel('./data/表3 原料检测结果.xlsx')
-    material_features = df_3.groupby(['原料名称', '原料批次', '检测项目名称'])['检测结果'].mean()
+    material_features = df_3.groupby(['原料名称', '原料批次', '检测项目名称'])['检测结果'].first()
     result_df = material_features.unstack(level=['原料名称', '检测项目名称']).reset_index()
     material_cols = [f'{batch}_{item}' for batch, item in result_df.columns[1:]]
     result_df.columns = ['原料批次'] + material_cols
@@ -83,7 +83,8 @@ df_prod_recipe = read_process_table2()
 df_material_test, material_test_cols = read_process_table3()
 
 df = df_batch_info.merge(df_material_test, on='原料批次').drop(columns=['原料批次']).fillna(0)
-df = df.groupby(['产品', '配方版本', '产品批次', '原料名称'])[material_test_cols].mean().reset_index()
+df[material_test_cols] = df[material_test_cols] * df['原料权重'].values[:, None]
+df = df.groupby(['产品', '配方版本', '产品批次', '原料名称'])[material_test_cols].sum().reset_index()
 df = df.groupby(['产品', '配方版本', '产品批次'])[material_test_cols].sum().reset_index()
 df = df.merge(df_prod_recipe, on=['产品', '配方版本'])
 df = df.merge(df_prod_test, on=['产品', '配方版本', '产品批次'], how='left')
