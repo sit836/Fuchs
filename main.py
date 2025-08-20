@@ -84,7 +84,6 @@ df_material_test, material_test_cols = read_process_table3()
 
 df = df_batch_info.merge(df_material_test, on='原料批次').drop(columns=['原料批次']).fillna(0)
 df[material_test_cols] = df[material_test_cols] * df['原料权重'].values[:, None]
-df = df.groupby(['产品', '配方版本', '产品批次', '原料名称'])[material_test_cols].sum().reset_index()
 df = df.groupby(['产品', '配方版本', '产品批次'])[material_test_cols].sum().reset_index()
 df = df.merge(df_prod_recipe, on=['产品', '配方版本'])
 df = df.merge(df_prod_test, on=['产品', '配方版本', '产品批次'], how='left')
